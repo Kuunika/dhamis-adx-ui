@@ -1,14 +1,23 @@
 import React from 'react';
 
-type Facility = {
+export type Facility = {
   id: number,
-  facilityNname: string
+  facilityName: string
+}
+
+export type Quarter = {
+  id: number,
+  year: number,
+  quarter: number
 }
 
 export type AppContextType = {
-  facilities: Facility[]
+  facilities: Facility[],
+  quarters: Quarter[]
 }
 
-const appContext = React.createContext<AppContextType>({ facilities: [] });
+const defaultContext = { facilities: [], quarters: [] }
+
+const appContext = React.createContext<AppContextType>(defaultContext);
 
 export default appContext;

@@ -9,7 +9,7 @@ import AppContextProvider from './AppContextProvider';
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     formWrapper: {
-      backgroundColor: '#596187',
+      backgroundColor: '#eee',
       paddingTop: '10px',
       paddingBottom: '10px',
       marginTop: '10px'
@@ -17,7 +17,11 @@ const useStyles = makeStyles((theme: Theme) =>
   }),
 );
 
-const FormWrapper = styled.div`
+const AppWrapper = styled.div`
+`;
+
+const AppTitle = styled.h1`
+  text-align: center
 `;
 
 const App: React.FC = () => {
@@ -26,9 +30,10 @@ const App: React.FC = () => {
     <AppContextProvider>
       <div className="app">
         <Header />
-        <FormWrapper className={classes.formWrapper}>
+        <AppWrapper className={classes.formWrapper}>
+          <AppTitle>DHAMIS ADX UI</AppTitle>
           <MigrationForm />
-        </FormWrapper>
+        </AppWrapper>
       </div >
     </AppContextProvider>
 
