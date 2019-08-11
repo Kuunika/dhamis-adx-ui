@@ -14,7 +14,7 @@ type ErrorProps = {
   message: string
 }
 
-const MigrationError: React.FC<ErrorProps> = (props) => {
+export const MigrationError: React.FC<ErrorProps> = (props) => {
   return (
     <ErrorContainer>
       <Box>
@@ -23,5 +23,3 @@ const MigrationError: React.FC<ErrorProps> = (props) => {
     </ErrorContainer>
   );
 }
-
-export default MigrationError;

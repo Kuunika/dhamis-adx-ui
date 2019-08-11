@@ -71,7 +71,7 @@ const defaultFormState = {
   isMigrating: false
 }
 
-const MigrationForm: React.FC = () => {
+export const MigrationForm: React.FC = () => {
   const classes = useStyles();
   const [values, setValues] = React.useState<FormState>(defaultFormState);
 
@@ -257,5 +257,3 @@ const MigrationForm: React.FC = () => {
     </AppContext.Consumer>
   )
 }
-
-export default MigrationForm;

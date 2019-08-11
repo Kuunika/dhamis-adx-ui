@@ -6,7 +6,7 @@ const LogoContainer = styled.div`
   padding: .6rem;
 `;
 
-const Header: React.FC = () => {
+export const Header: React.FC = () => {
   return (
     <div>
       <LogoContainer>
@@ -15,5 +15,3 @@ const Header: React.FC = () => {
     </div>
   )
 }
-
-export default Header;
