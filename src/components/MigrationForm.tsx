@@ -9,10 +9,13 @@ import {
   MenuItem,
   TextField,
   Button,
-  Card
+  Card,
+  CircularProgress
 } from '@material-ui/core';
+
 import AppContext, { Facility, Quarter } from '../AppContext';
 import axios from 'axios';
+import { createErrorAlert, createSuccessAlert } from '../modules';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -21,7 +24,7 @@ const useStyles = makeStyles((theme: Theme) =>
       margin: 'auto',
       marginTop: '2rem',
       marginBottom: '2rem',
-      borderRadius: '12px'
+      borderRadius: '9px'
     },
     select: {
       width: '100%',
@@ -33,15 +36,25 @@ const useStyles = makeStyles((theme: Theme) =>
     submittButton: {
       width: '100%',
       marginTop: theme.spacing(4)
+    },
+    migratingIndicator: {
+      color: 'white',
+      float: 'left',
+      marginRight: '5px'
+    },
+    migratingButton: {
+      fontWeight: 'bold'
     }
   }),
 );
+
 type FormState = {
   year: number,
   quarter: number,
   description: string,
   facilities: Facility[],
-  quarters: Quarter[]
+  quarters: Quarter[],
+  isMigrating: boolean
 }
 
 type SelectChange = {
@@ -54,7 +67,8 @@ const defaultFormState = {
   quarter: 0,
   description: '',
   facilities: [],
-  quarters: []
+  quarters: [],
+  isMigrating: false
 }
 
 const MigrationForm: React.FC = () => {
@@ -62,7 +76,7 @@ const MigrationForm: React.FC = () => {
   const [values, setValues] = React.useState<FormState>(defaultFormState);
 
   const resetForm = () => {
-    setValues({ ...values, year: 0, quarter: 0, description: '' });
+    setValues({ ...values, year: 0, quarter: 0, description: '', isMigrating: false });
   }
 
   function handleSelectChange(event: React.ChangeEvent<SelectChange>) {
@@ -76,55 +90,77 @@ const MigrationForm: React.FC = () => {
     setValues({ ...values, [event.target.name]: event.target.value });
   };
 
-  const dependenciesAvailable = () => {
-    return (values.facilities.length && values.quarters.length)
+  const dependenciesAvailable = (facilities: any[], quarters: any[]) => {
+    return (facilities.length && quarters.length)
+  }
+
+  const filterNullFacilities = (facility: any) => (facility['facility-code'] !== null)
+
+  //TODO: remove the slice function
+  const getFacilityIds = (facilities: any[]) => facilities
+    .filter(facility => facility.id)
+    .slice(0, 500)
+    .reduce((accumulator, current) => `${accumulator},${current.id}`, '')
+    .slice(1);
+
+  const handleMigrationFailure = (text: string) => {
+    createErrorAlert({ text });
+    setValues({ ...values, isMigrating: false })
   }
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-
+    setValues({ ...values, isMigrating: true });
+    const { facilities, quarters, quarter, year } = values;
     //TODO: might want to notify user why this stage never got passed
-    if (dependenciesAvailable()) {
-      const { facilities, quarters, quarter, year } = values;
-
-      //TODO: remove the slicing from the code, need to look into a real solution
-      const ids = facilities
-        .filter(facility => facility.id)
-        .slice(0, 100)
-        .reduce((accumulator, current) => `${accumulator},${current.id}`, '')
-        .slice(1);
-      const _quarter = quarters.find(q => (q.quarter === quarter && q.year === year));
-      if (_quarter) {
-        const { REACT_APP_DHAMIS_API_URL, REACT_APP_DHAMIS_API_SECRET } = process.env;
-        const data = await fetch(
-          `${REACT_APP_DHAMIS_API_URL}/artclinic/get/${REACT_APP_DHAMIS_API_SECRET}/${_quarter.id}/${ids}`
-        ).then(res => res.json()).catch(e => console.log(e.message));
-
-        //TODO: provide logic to be done when it failed to collect the dhamis data
-        if (data) {
-          console.log(data);
-          const {
-            REACT_APP_INTEROP_API_URL_ENDPOINT,
-            REACT_APP_INTEROP_USERNAME,
-            REACT_APP_INTEROP_PASSWORD
-          } = process.env;
-          await axios({
-            url: `${REACT_APP_INTEROP_API_URL_ENDPOINT}/data-elements`,
-            method: 'post',
-            data,
-            auth: {
-              username: `${REACT_APP_INTEROP_USERNAME}`,
-              password: `${REACT_APP_INTEROP_PASSWORD}`
-            }
-          }).then(data => console.log(data))
-          await setTimeout(resetForm, 2000);
-        }
-      }
+    if (!dependenciesAvailable(facilities, quarters)) {
+      handleMigrationFailure('Failed to fetch dependencies, please try again');
+      return;
     }
-  }
+    //TODO: remove the slicing from the code, need to look into a real solution
+    const ids = getFacilityIds(facilities)
 
-  const isYearSelected = (year: number): boolean => {
-    return new Date().getFullYear() === year;
+    const _quarter = quarters.find(q => (q.quarter === quarter && q.year === year));
+    if (!_quarter) {
+      handleMigrationFailure('Failed to find selected quarter, please try again');
+      return;
+    }
+
+    const { REACT_APP_DHAMIS_API_URL, REACT_APP_DHAMIS_API_SECRET } = process.env;
+    const dhamisData = await fetch(
+      `${REACT_APP_DHAMIS_API_URL}/artclinic/get/${REACT_APP_DHAMIS_API_SECRET}/${_quarter.id}/${ids}`
+    ).then(res => res.json()).catch(e => console.log(e.message));
+
+    //TODO: provide logic to be done when it failed to collect the dhamis data
+    if (!dhamisData) {
+      handleMigrationFailure('Failed to fetch data for specified period, please try again')
+      return
+    }
+
+    const data = {
+      ...dhamisData,
+      facilities: dhamisData.facilities.filter(filterNullFacilities),
+      description: values.description
+    };
+    const {
+      REACT_APP_INTEROP_API_URL_ENDPOINT,
+      REACT_APP_INTEROP_USERNAME,
+      REACT_APP_INTEROP_PASSWORD
+    } = process.env;
+    const adxResponse: any = await axios({
+      url: `${REACT_APP_INTEROP_API_URL_ENDPOINT}/data-elements`,
+      method: 'post',
+      data,
+      auth: {
+        username: `${REACT_APP_INTEROP_USERNAME}`,
+        password: `${REACT_APP_INTEROP_PASSWORD}`
+      }
+    })
+      .catch(error => console.log(error.message))
+    if (adxResponse && adxResponse.status === 202) {
+      createSuccessAlert({ text: 'migration id' })
+      await setTimeout(resetForm, 2000);
+    }
   }
 
   return (
@@ -133,9 +169,12 @@ const MigrationForm: React.FC = () => {
         const { facilities, quarters } = context;
         values.facilities = facilities;
         values.quarters = quarters;
-
+        const quarterLiterals = Array(4)
+          .fill(0)
+          .map((_, i) => i + 1);
+        const { isMigrating } = values;
         return (
-          <Card className={classes.container}>
+          <Card className={classes.container} elevation={8}>
             <Box component="div" m={5}>
               <form onSubmit={handleSubmit}>
                 <Box>
@@ -153,7 +192,7 @@ const MigrationForm: React.FC = () => {
                           }}
                         >
                           {Array.from(new Set(quarters.map(quarter => quarter.year))).map(year => (
-                            <MenuItem key={year} selected={isYearSelected(year)} value={year}>{year}</MenuItem>
+                            <MenuItem key={year} value={year}>{year}</MenuItem>
                           )
                           )}
                         </Select>
@@ -171,10 +210,12 @@ const MigrationForm: React.FC = () => {
                             id: 'quarter',
                           }}
                         >
-                          <MenuItem key={1} value={1}>Quarter 1</MenuItem>
-                          <MenuItem key={2} value={2}>Quarter 2</MenuItem>
-                          <MenuItem key={3} value={3}>Quarter 3</MenuItem>
-                          <MenuItem key={4} value={4}>Quarter 4</MenuItem>
+                          {
+                            quarterLiterals.map(
+                              ql => (
+                                <MenuItem key={ql} value={ql}>Quarter {ql}</MenuItem>
+                              ))
+                          }
                         </Select>
                       </FormControl>
                     </Grid>
@@ -200,9 +241,11 @@ const MigrationForm: React.FC = () => {
                         variant="contained"
                         color="primary"
                         type="submit"
+                        disabled={isMigrating}
                       >
-                        Migrate
-                    </Button>
+                        {isMigrating && <CircularProgress size={18} className={classes.migratingIndicator} />}
+                        <span className={classes.migratingButton}>{isMigrating ? 'Migrating...' : 'Migrate'}</span>
+                      </Button>
                     </Grid>
                   </Grid>
                 </Box>

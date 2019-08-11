@@ -7,6 +7,15 @@ class AppContextProvider extends React.Component {
     facilities,
     quarters
   }
+
+  //TODO: Use this function
+  async convertResponse(response: Response, converter: Function) {
+    const res = await response.json();
+    return converter(res);
+  }
+
+  async migrate(data: any) { }
+
   componentDidMount() {
     const formatFacilities = (facility: any) => (
       {

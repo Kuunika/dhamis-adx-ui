@@ -22,6 +22,7 @@ const AppWrapper = styled.div`
 
 const AppTitle = styled.h1`
   text-align: center
+  font-size: 150%
 `;
 
 const App: React.FC = () => {
@@ -31,7 +32,7 @@ const App: React.FC = () => {
       <div className="app">
         <Header />
         <AppWrapper className={classes.formWrapper}>
-          <AppTitle>DHAMIS ADX UI</AppTitle>
+          <AppTitle>DHAMIS-DHIS2 APP</AppTitle>
           <MigrationForm />
         </AppWrapper>
       </div >
