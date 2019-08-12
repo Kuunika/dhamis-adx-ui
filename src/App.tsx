@@ -2,7 +2,7 @@ import React from 'react';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import styled from 'styled-components';
 import './App.css';
-import { Header, MigrationForm } from './components/';
+import { Header, MigrationForm, Footer } from './components/';
 import AppContextProvider from './AppContextProvider';
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -34,6 +34,7 @@ const App: React.FC = () => {
           <AppTitle>DHAMIS-DHIS2 APP</AppTitle>
           <MigrationForm />
         </AppWrapper>
+        <Footer />
       </div >
     </AppContextProvider>
 
