@@ -112,7 +112,7 @@ export const MigrationForm: React.FC = () => {
     event.preventDefault();
     setValues({ ...values, isMigrating: true });
     const { facilities, quarters, quarter, year } = values;
-    //TODO: might want to notify user why this stage never got passed
+
     if (!dependenciesAvailable(facilities, quarters)) {
       handleMigrationFailure('Failed to fetch dependencies, please try again');
       return;
@@ -131,7 +131,6 @@ export const MigrationForm: React.FC = () => {
       `${REACT_APP_DHAMIS_API_URL}/artclinic/get/${REACT_APP_DHAMIS_API_SECRET}/${_quarter.id}/${ids}`
     ).then(res => res.json()).catch(e => console.log(e.message));
 
-    //TODO: provide logic to be done when it failed to collect the dhamis data
     if (!dhamisData) {
       handleMigrationFailure('Failed to fetch data for specified period, please try again')
       return
@@ -147,6 +146,7 @@ export const MigrationForm: React.FC = () => {
       REACT_APP_INTEROP_USERNAME,
       REACT_APP_INTEROP_PASSWORD
     } = process.env;
+
     const adxResponse: any = await axios({
       url: `${REACT_APP_INTEROP_API_URL_ENDPOINT}/data-elements`,
       method: 'post',
@@ -158,7 +158,11 @@ export const MigrationForm: React.FC = () => {
     })
       .catch(error => console.log(error.message))
     if (adxResponse && adxResponse.status === 202) {
-      createSuccessAlert({ text: 'migration id' })
+      const html = `
+        <h4>Notification Channel</h4>
+        <p>${adxResponse.data.notificationsChannel}</p>
+      `;
+      createSuccessAlert({ html })
       await setTimeout(resetForm, 2000);
     }
   }
