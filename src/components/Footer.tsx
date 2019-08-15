@@ -6,11 +6,6 @@ const FooterContainer = styled.div`
   color: white;
   padding: 30px 10px;
 `;
-const FooterLink = styled.a`
-  color: white !important;
-  text-decoration: none;
-  font-weight: 600;
-`;
 
 export const Footer: React.FC = () => {
   return (
