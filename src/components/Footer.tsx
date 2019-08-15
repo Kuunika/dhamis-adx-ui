@@ -15,9 +15,7 @@ const FooterLink = styled.a`
 export const Footer: React.FC = () => {
   return (
     <FooterContainer>
-      <span><FooterLink href="#">About Project</FooterLink></span>
-      &nbsp; | &nbsp;
-      <span><FooterLink href="#">About Project</FooterLink></span>
+      &copy; 2019. HIV department: Ministry of Health
     </FooterContainer>
   )
 }
