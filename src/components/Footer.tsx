@@ -10,7 +10,7 @@ const FooterContainer = styled.div`
 export const Footer: React.FC = () => {
   return (
     <FooterContainer>
-      &copy; 2019. HIV department: Ministry of Health
+      &copy; 2019. HIV Department: Ministry of Health
     </FooterContainer>
   )
 }
