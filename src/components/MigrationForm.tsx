@@ -157,14 +157,17 @@ export const MigrationForm: React.FC = () => {
       }
     })
       .catch(error => console.log(error.message))
-    if (adxResponse && adxResponse.status === 202) {
-      const html = `
-        <h4>Notification Channel</h4>
-        <p>${adxResponse.data.notificationsChannel}</p>
-      `;
-      createSuccessAlert({ html })
-      await setTimeout(resetForm, 2000);
+
+    if (!adxResponse || adxResponse.status !== 202) {
+      const text = 'Failed to send data to the interoperability layer';
+      createErrorAlert({ text });
+      return;
     }
+    const html = `
+        <p>You will recieve an Email once the migration is processed</p>
+      `;
+    createSuccessAlert({ html })
+    await setTimeout(resetForm, 2000);
   }
 
   return (

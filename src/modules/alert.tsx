@@ -9,7 +9,7 @@ export const createErrorAlert = (config: AlertConfig) => {
   Swal.fire({
     title: 'Error!',
     type: 'error',
-    confirmButtonText: 'Done',
+    confirmButtonText: 'Okay',
     allowOutsideClick: false,
     position: 'top',
     ...config
@@ -18,9 +18,9 @@ export const createErrorAlert = (config: AlertConfig) => {
 
 export const createSuccessAlert = (config: AlertConfig) => {
   Swal.fire({
-    title: 'Success!',
-    type: 'success',
-    confirmButtonText: 'Done',
+    title: 'Thank You!',
+    type: 'info',
+    confirmButtonText: 'Okay',
     position: 'top',
     allowOutsideClick: false,
     ...config
