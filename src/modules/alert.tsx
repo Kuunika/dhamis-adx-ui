@@ -16,13 +16,16 @@ export const createErrorAlert = (config: AlertConfig) => {
   });
 }
 
-export const createSuccessAlert = (config: AlertConfig) => {
+export const createSuccessAlert = (channelId: string, config: AlertConfig) => {
   Swal.fire({
     title: 'Thank You!',
     type: 'info',
     confirmButtonText: 'Okay',
     position: 'top',
     allowOutsideClick: false,
+    onClose() {
+      window.open(`${process.env.REACT_APP_CONSOLE_URL}${channelId}`, "_blank");
+    },
     ...config
   });
 }

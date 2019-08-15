@@ -117,7 +117,7 @@ export const MigrationForm: React.FC = () => {
   //TODO: remove the slice function
   const getFacilityIds = (facilities: any[]) => facilities
     .filter(facility => facility.id)
-    .slice(0, 500)
+    .slice(0, 5)
     .reduce((accumulator, current) => `${accumulator},${current.id}`, '')
     .slice(1);
 
@@ -186,7 +186,7 @@ export const MigrationForm: React.FC = () => {
     const html = `
         <p>You will recieve an Email once the migration is processed</p>
       `;
-    createSuccessAlert({ html })
+    createSuccessAlert(adxResponse.data.notificationsChannel, { html })
     await setTimeout(resetForm, 2000);
   }
 
