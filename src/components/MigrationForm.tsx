@@ -96,6 +96,24 @@ export const MigrationForm: React.FC = () => {
 
   const filterNullFacilities = (facility: any) => (facility['facility-code'] !== null)
 
+  const formatProducts = (facilities: any[]) => {
+    if (facilities instanceof Array) {
+      return facilities.map((facility: any) => {
+        if (facility.values && facility.values instanceof Array) {
+          return {
+            ...facility,
+            values: facility.values.map((value: any) => ({
+              'product-code': value['product-code'] || 'null',
+              'value': value['value'] || 0
+            }))
+          }
+        }
+        return { ...facility, values: [{ 'product-code': 'null', value: 0 }] }
+      })
+    }
+    return [];
+  }
+
   //TODO: remove the slice function
   const getFacilityIds = (facilities: any[]) => facilities
     .filter(facility => facility.id)
@@ -136,9 +154,11 @@ export const MigrationForm: React.FC = () => {
       return
     }
 
+    const dhamisFacilites = dhamisData.facilities.filter(filterNullFacilities)
+    const validFacilities = formatProducts(dhamisFacilites);
     const data = {
       ...dhamisData,
-      facilities: dhamisData.facilities.filter(filterNullFacilities),
+      facilities: validFacilities,
       description: values.description
     };
     const {
