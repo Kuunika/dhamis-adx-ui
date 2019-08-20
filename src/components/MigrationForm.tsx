@@ -117,7 +117,7 @@ export const MigrationForm: React.FC = () => {
   //TODO: remove the slice function
   const getFacilityIds = (facilities: any[]) => facilities
     .filter(facility => facility.id)
-    .slice(0, 5)
+    .slice(0, 957)
     .reduce((accumulator, current) => `${accumulator},${current.id}`, '')
     .slice(1);
 
