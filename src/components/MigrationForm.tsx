@@ -1,5 +1,5 @@
-import React from 'react';
-import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
+import React from "react";
+import { createStyles, makeStyles, Theme } from "@material-ui/core/styles";
 import {
   Grid,
   Box,
@@ -11,78 +11,84 @@ import {
   Button,
   Card,
   CircularProgress
-} from '@material-ui/core';
+} from "@material-ui/core";
 
-import AppContext, { Facility, Quarter } from '../AppContext';
-import axios from 'axios';
-import { createErrorAlert, createSuccessAlert } from '../modules';
+import AppContext, { Facility, Quarter } from "../AppContext";
+import axios from "axios";
+import { createErrorAlert, createSuccessAlert } from "../modules";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     container: {
-      width: '30%',
-      margin: 'auto',
-      marginTop: '2rem',
-      marginBottom: '2rem',
-      borderRadius: '9px'
+      width: "30%",
+      margin: "auto",
+      marginTop: "2rem",
+      marginBottom: "2rem",
+      borderRadius: "9px"
     },
     select: {
-      width: '100%',
+      width: "100%"
     },
     textField: {
-      width: '100%',
+      width: "100%",
       marginTop: theme.spacing(2)
     },
     submittButton: {
-      width: '100%',
+      width: "100%",
       marginTop: theme.spacing(4)
     },
     migratingIndicator: {
-      color: 'white',
-      float: 'left',
-      marginRight: '5px'
+      color: "white",
+      float: "left",
+      marginRight: "5px"
     },
     migratingButton: {
-      fontWeight: 'bold'
+      fontWeight: "bold"
     }
-  }),
+  })
 );
 
 type FormState = {
-  year: number,
-  quarter: number,
-  description: string,
-  facilities: Facility[],
-  quarters: Quarter[],
-  isMigrating: boolean
-}
+  year: number;
+  quarter: number;
+  description: string;
+  facilities: Facility[];
+  quarters: Quarter[];
+  isMigrating: boolean;
+};
 
 type SelectChange = {
   name?: string;
-  value: unknown
-}
+  value: unknown;
+};
 
 const defaultFormState = {
   year: 0,
   quarter: 0,
-  description: '',
+  description: "",
   facilities: [],
   quarters: [],
   isMigrating: false
-}
+};
 
 export const MigrationForm: React.FC = () => {
   const classes = useStyles();
   const [values, setValues] = React.useState<FormState>(defaultFormState);
 
   const resetForm = () => {
-    setValues({ ...values, year: 0, quarter: 0, description: '', isMigrating: false });
-  }
+    setValues({
+      ...values,
+      year: 0,
+      quarter: 0,
+      description: "",
+      isMigrating: false
+    });
+  };
 
   function handleSelectChange(event: React.ChangeEvent<SelectChange>) {
     setValues(oldValues => ({
       ...oldValues,
-      [event.target.name as string]: event.target.value,
+      [event.target.name as string]: event.target.value
     }));
   }
 
@@ -91,10 +97,11 @@ export const MigrationForm: React.FC = () => {
   };
 
   const dependenciesAvailable = (facilities: any[], quarters: any[]) => {
-    return (facilities.length && quarters.length)
-  }
+    return facilities.length && quarters.length;
+  };
 
-  const filterNullFacilities = (facility: any) => (facility['facility-code'] !== null)
+  const filterNullFacilities = (facility: any) =>
+    facility["facility-code"] !== null;
 
   const formatProducts = (facilities: any[]) => {
     if (facilities instanceof Array) {
@@ -103,28 +110,29 @@ export const MigrationForm: React.FC = () => {
           return {
             ...facility,
             values: facility.values.map((value: any) => ({
-              'product-code': value['product-code'] || 'null',
-              'value': value['value'] || 0
+              "product-code": value["product-code"] || "null",
+              value: value["value"] || 0
             }))
-          }
+          };
         }
-        return { ...facility, values: [{ 'product-code': 'null', value: 0 }] }
-      })
+        return { ...facility, values: [{ "product-code": "null", value: 0 }] };
+      });
     }
     return [];
-  }
+  };
 
-  //TODO: remove the slice function
-  const getFacilityIds = (facilities: any[]) => facilities
-    .filter(facility => facility.id)
-    .slice(0, 957)
-    .reduce((accumulator, current) => `${accumulator},${current.id}`, '')
-    .slice(1);
+  //TODO: workout on the slicing element 
+  const getFacilityIds = (facilities: any[]) =>
+    facilities
+      .filter(facility => facility.id)
+      .slice(0, 900)
+      .reduce((accumulator, current) => `${accumulator},${current.id}`, "")
+      .slice(1);
 
   const handleMigrationFailure = (text: string) => {
     createErrorAlert({ text });
-    setValues({ ...values, isMigrating: false })
-  }
+    setValues({ ...values, isMigrating: false });
+  };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -132,29 +140,43 @@ export const MigrationForm: React.FC = () => {
     const { facilities, quarters, quarter, year } = values;
 
     if (!dependenciesAvailable(facilities, quarters)) {
-      handleMigrationFailure('Failed to fetch dependencies, please try again');
+      handleMigrationFailure("Failed to fetch dependencies, please try again");
       return;
     }
     //TODO: remove the slicing from the code, need to look into a real solution
-    const ids = getFacilityIds(facilities)
+    const ids = getFacilityIds(facilities);
 
-    const _quarter = quarters.find(q => (q.quarter === quarter && q.year === year));
+    const _quarter = quarters.find(
+      q => q.quarter === quarter && q.year === year
+    );
     if (!_quarter) {
-      handleMigrationFailure('Failed to find selected quarter, please try again');
+      handleMigrationFailure(
+        "Failed to find selected quarter, please try again"
+      );
       return;
     }
 
-    const { REACT_APP_DHAMIS_API_URL, REACT_APP_DHAMIS_API_SECRET } = process.env;
-    const dhamisData = await fetch(
-      `${REACT_APP_DHAMIS_API_URL}/artclinic/get/${REACT_APP_DHAMIS_API_SECRET}/${_quarter.id}/${ids}`
-    ).then(res => res.json()).catch(e => console.log(e.message));
+    const {
+      REACT_APP_DHAMIS_API_URL,
+      REACT_APP_DHAMIS_API_SECRET,
+      REACT_APP_DHAMIS_DATASET
+    } = process.env;
+
+    const url = `${REACT_APP_DHAMIS_API_URL}/${REACT_APP_DHAMIS_DATASET}/get/${REACT_APP_DHAMIS_API_SECRET}/${_quarter.id}/${ids}`;
+
+    console.log({ url });
+    const dhamisData = await fetch(url)
+      .then(res => res.json())
+      .catch(e => console.log(e.message));
 
     if (!dhamisData) {
-      handleMigrationFailure('Failed to fetch data for specified period, please try again')
-      return
+      handleMigrationFailure(
+        "Failed to fetch data for specified period, please try again"
+      );
+      return;
     }
 
-    const dhamisFacilites = dhamisData.facilities.filter(filterNullFacilities)
+    const dhamisFacilites = dhamisData.facilities.filter(filterNullFacilities);
     const validFacilities = formatProducts(dhamisFacilites);
     const data = {
       ...dhamisData,
@@ -167,32 +189,33 @@ export const MigrationForm: React.FC = () => {
       REACT_APP_INTEROP_PASSWORD
     } = process.env;
 
+    console.log(REACT_APP_INTEROP_USERNAME, REACT_APP_INTEROP_PASSWORD);
+
     const adxResponse: any = await axios({
-      url: `${REACT_APP_INTEROP_API_URL_ENDPOINT}/data-elements`,
-      method: 'post',
+      url: `${REACT_APP_INTEROP_API_URL_ENDPOINT}/dhis2/data-elements`,
+      method: "post",
       data,
       auth: {
         username: `${REACT_APP_INTEROP_USERNAME}`,
         password: `${REACT_APP_INTEROP_PASSWORD}`
       }
-    })
-      .catch(error => console.log(error.message))
+    }).catch(error => console.log(error.message));
 
     if (!adxResponse || adxResponse.status !== 202) {
-      const text = 'Failed to send data to the interoperability layer';
+      const text = "Failed to send data to the interoperability layer";
       createErrorAlert({ text });
       return;
     }
     const html = `
         <p>You will recieve an Email once the migration is processed</p>
       `;
-    createSuccessAlert(adxResponse.data.notificationsChannel, { html })
-    await setTimeout(resetForm, 2000);
-  }
+    createSuccessAlert(adxResponse.data.notificationsChannel, { html });
+    setTimeout(resetForm, 2000);
+  };
 
   return (
     <AppContext.Consumer>
-      {(context) => {
+      {context => {
         const { facilities, quarters } = context;
         values.facilities = facilities;
         values.quarters = quarters;
@@ -206,43 +229,47 @@ export const MigrationForm: React.FC = () => {
               <form onSubmit={handleSubmit}>
                 <Box>
                   <Grid container>
-                    <Grid item xs={6} style={{ paddingRight: '5px' }}>
+                    <Grid item xs={6} style={{ paddingRight: "5px" }}>
                       <FormControl className={classes.select}>
                         <InputLabel htmlFor="year">Year</InputLabel>
                         <Select
                           value={values.year}
                           onChange={handleSelectChange}
                           required
+                          id="year"
                           inputProps={{
-                            name: 'year',
-                            id: 'year',
+                            name: "year",
+                            id: "year"
                           }}
                         >
-                          {Array.from(new Set(quarters.map(quarter => quarter.year))).map(year => (
-                            <MenuItem key={year} value={year}>{year}</MenuItem>
-                          )
-                          )}
+                          {Array.from(
+                            new Set(quarters.map(quarter => quarter.year))
+                          ).map(year => (
+                            <MenuItem key={year} value={year}>
+                              {year}
+                            </MenuItem>
+                          ))}
                         </Select>
                       </FormControl>
                     </Grid>
-                    <Grid item xs={6} style={{ paddingLeft: '5px' }}>
+                    <Grid item xs={6} style={{ paddingLeft: "5px" }}>
                       <FormControl className={classes.select}>
                         <InputLabel htmlFor="quarter">Quarter</InputLabel>
                         <Select
                           value={values.quarter}
                           onChange={handleSelectChange}
                           required
+                          id="quarter"
                           inputProps={{
-                            name: 'quarter',
-                            id: 'quarter',
+                            name: "quarter",
+                            id: "quarter"
                           }}
                         >
-                          {
-                            quarterLiterals.map(
-                              ql => (
-                                <MenuItem key={ql} value={ql}>Quarter {ql}</MenuItem>
-                              ))
-                          }
+                          {quarterLiterals.map(ql => (
+                            <MenuItem key={ql} value={ql}>
+                              Quarter {ql}
+                            </MenuItem>
+                          ))}
                         </Select>
                       </FormControl>
                     </Grid>
@@ -257,8 +284,8 @@ export const MigrationForm: React.FC = () => {
                         value={values.description}
                         name="description"
                         inputProps={{
-                          name: 'description',
-                          id: 'description',
+                          name: "description",
+                          id: "description"
                         }}
                       />
                     </Grid>
@@ -268,10 +295,18 @@ export const MigrationForm: React.FC = () => {
                         variant="contained"
                         color="primary"
                         type="submit"
+                        id="migrate"
                         disabled={isMigrating}
                       >
-                        {isMigrating && <CircularProgress size={18} className={classes.migratingIndicator} />}
-                        <span className={classes.migratingButton}>{isMigrating ? 'Migrating...' : 'Migrate'}</span>
+                        {isMigrating && (
+                          <CircularProgress
+                            size={18}
+                            className={classes.migratingIndicator}
+                          />
+                        )}
+                        <span className={classes.migratingButton}>
+                          {isMigrating ? "Migrating..." : "Migrate"}
+                        </span>
                       </Button>
                     </Grid>
                   </Grid>
@@ -279,8 +314,8 @@ export const MigrationForm: React.FC = () => {
               </form>
             </Box>
           </Card>
-        )
+        );
       }}
     </AppContext.Consumer>
-  )
-}
+  );
+};
