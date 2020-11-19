@@ -135,6 +135,7 @@ export const MigrationForm: React.FC = () => {
   };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    debugger
     event.preventDefault();
     setValues({ ...values, isMigrating: true });
     const { facilities, quarters, quarter, year } = values;
@@ -245,7 +246,7 @@ export const MigrationForm: React.FC = () => {
                           {Array.from(
                             new Set(quarters.map(quarter => quarter.year))
                           ).map(year => (
-                            <MenuItem key={year} value={year}>
+                            <MenuItem key={year} value={year} data-test={`op${year}`}>
                               {year}
                             </MenuItem>
                           ))}
