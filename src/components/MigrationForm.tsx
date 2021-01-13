@@ -10,12 +10,13 @@ import {
   TextField,
   Button,
   Card,
-  CircularProgress
+  CircularProgress,
 } from "@material-ui/core";
 
 import AppContext, { Facility, Quarter } from "../AppContext";
 import axios from "axios";
 import { createErrorAlert, createSuccessAlert } from "../modules";
+import { data as dd } from "../fixtures";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -24,27 +25,27 @@ const useStyles = makeStyles((theme: Theme) =>
       margin: "auto",
       marginTop: "2rem",
       marginBottom: "2rem",
-      borderRadius: "9px"
+      borderRadius: "9px",
     },
     select: {
-      width: "100%"
+      width: "100%",
     },
     textField: {
       width: "100%",
-      marginTop: theme.spacing(2)
+      marginTop: theme.spacing(2),
     },
     submittButton: {
       width: "100%",
-      marginTop: theme.spacing(4)
+      marginTop: theme.spacing(4),
     },
     migratingIndicator: {
       color: "white",
       float: "left",
-      marginRight: "5px"
+      marginRight: "5px",
     },
     migratingButton: {
-      fontWeight: "bold"
-    }
+      fontWeight: "bold",
+    },
   })
 );
 
@@ -68,7 +69,7 @@ const defaultFormState = {
   description: "",
   facilities: [],
   quarters: [],
-  isMigrating: false
+  isMigrating: false,
 };
 
 export const MigrationForm: React.FC = () => {
@@ -81,14 +82,14 @@ export const MigrationForm: React.FC = () => {
       year: 0,
       quarter: 0,
       description: "",
-      isMigrating: false
+      isMigrating: false,
     });
   };
 
   function handleSelectChange(event: React.ChangeEvent<SelectChange>) {
-    setValues(oldValues => ({
+    setValues((oldValues) => ({
       ...oldValues,
-      [event.target.name as string]: event.target.value
+      [event.target.name as string]: event.target.value,
     }));
   }
 
@@ -111,8 +112,8 @@ export const MigrationForm: React.FC = () => {
             ...facility,
             values: facility.values.map((value: any) => ({
               "product-code": value["product-code"] || "null",
-              value: value["value"] || 0
-            }))
+              value: value["value"] || 0,
+            })),
           };
         }
         return { ...facility, values: [{ "product-code": "null", value: 0 }] };
@@ -121,10 +122,10 @@ export const MigrationForm: React.FC = () => {
     return [];
   };
 
-  //TODO: workout on the slicing element 
+  //TODO: workout on the slicing element
   const getFacilityIds = (facilities: any[]) =>
     facilities
-      .filter(facility => facility.id)
+      .filter((facility) => facility.id)
       .slice(0, 900)
       .reduce((accumulator, current) => `${accumulator},${current.id}`, "")
       .slice(1);
@@ -135,7 +136,6 @@ export const MigrationForm: React.FC = () => {
   };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    debugger
     event.preventDefault();
     setValues({ ...values, isMigrating: true });
     const { facilities, quarters, quarter, year } = values;
@@ -148,8 +148,9 @@ export const MigrationForm: React.FC = () => {
     const ids = getFacilityIds(facilities);
 
     const _quarter = quarters.find(
-      q => q.quarter === quarter && q.year === year
+      (q) => q.quarter === quarter && q.year === year
     );
+
     if (!_quarter) {
       handleMigrationFailure(
         "Failed to find selected quarter, please try again"
@@ -160,16 +161,18 @@ export const MigrationForm: React.FC = () => {
     const {
       REACT_APP_DHAMIS_API_URL,
       REACT_APP_DHAMIS_API_SECRET,
-      REACT_APP_DHAMIS_DATASET
+      REACT_APP_DHAMIS_DATASET,
     } = process.env;
 
     const url = `${REACT_APP_DHAMIS_API_URL}/${REACT_APP_DHAMIS_DATASET}/get/${REACT_APP_DHAMIS_API_SECRET}/${_quarter.id}/${ids}`;
 
-    console.log({ url });
-    const dhamisData = await fetch(url)
-      .then(res => res.json())
-      .catch(e => console.log(e.message));
+    let dhamisData;
 
+    try {
+      dhamisData = await (await axios(url)).data;
+    } catch (error) {}
+
+    dhamisData = dd;
     if (!dhamisData) {
       handleMigrationFailure(
         "Failed to fetch data for specified period, please try again"
@@ -182,25 +185,25 @@ export const MigrationForm: React.FC = () => {
     const data = {
       ...dhamisData,
       facilities: validFacilities,
-      description: values.description
+      description: values.description,
     };
     const {
       REACT_APP_INTEROP_API_URL_ENDPOINT,
       REACT_APP_INTEROP_USERNAME,
-      REACT_APP_INTEROP_PASSWORD
+      REACT_APP_INTEROP_PASSWORD,
     } = process.env;
 
-    console.log(REACT_APP_INTEROP_USERNAME, REACT_APP_INTEROP_PASSWORD);
+    // console.log(REACT_APP_INTEROP_USERNAME, REACT_APP_INTEROP_PASSWORD);
 
-    const adxResponse: any = await axios({
+    let adxResponse: any = await axios({
       url: `${REACT_APP_INTEROP_API_URL_ENDPOINT}/dhis2/data-elements`,
       method: "post",
       data,
       auth: {
         username: `${REACT_APP_INTEROP_USERNAME}`,
-        password: `${REACT_APP_INTEROP_PASSWORD}`
-      }
-    }).catch(error => console.log(error.message));
+        password: `${REACT_APP_INTEROP_PASSWORD}`,
+      },
+    }).catch((error) => console.log(error.message));
 
     if (!adxResponse || adxResponse.status !== 202) {
       const text = "Failed to send data to the interoperability layer";
@@ -216,10 +219,11 @@ export const MigrationForm: React.FC = () => {
 
   return (
     <AppContext.Consumer>
-      {context => {
+      {(context) => {
         const { facilities, quarters } = context;
         values.facilities = facilities;
         values.quarters = quarters;
+
         const quarterLiterals = Array(4)
           .fill(0)
           .map((_, i) => i + 1);
@@ -240,13 +244,17 @@ export const MigrationForm: React.FC = () => {
                           id="year"
                           inputProps={{
                             name: "year",
-                            id: "year"
+                            id: "year",
                           }}
                         >
                           {Array.from(
-                            new Set(quarters.map(quarter => quarter.year))
-                          ).map(year => (
-                            <MenuItem key={year} value={year} data-test={`op${year}`}>
+                            new Set(quarters.map((quarter) => quarter.year))
+                          ).map((year) => (
+                            <MenuItem
+                              key={year}
+                              value={year}
+                              data-test={`op${year}`}
+                            >
                               {year}
                             </MenuItem>
                           ))}
@@ -263,10 +271,10 @@ export const MigrationForm: React.FC = () => {
                           id="quarter"
                           inputProps={{
                             name: "quarter",
-                            id: "quarter"
+                            id: "quarter",
                           }}
                         >
-                          {quarterLiterals.map(ql => (
+                          {quarterLiterals.map((ql) => (
                             <MenuItem key={ql} value={ql}>
                               Quarter {ql}
                             </MenuItem>
@@ -286,7 +294,7 @@ export const MigrationForm: React.FC = () => {
                         name="description"
                         inputProps={{
                           name: "description",
-                          id: "description"
+                          id: "description",
                         }}
                       />
                     </Grid>
@@ -297,6 +305,7 @@ export const MigrationForm: React.FC = () => {
                         color="primary"
                         type="submit"
                         id="migrate"
+                        data-test="submit"
                         disabled={isMigrating}
                       >
                         {isMigrating && (
