@@ -5,7 +5,7 @@ import { facilities, quarters } from "./fixtures";
 class AppContextProvider extends React.Component {
   state = {
     facilities,
-    quarters
+    quarters,
   };
 
   //TODO: Use this function
@@ -19,13 +19,13 @@ class AppContextProvider extends React.Component {
   componentDidMount() {
     const formatFacilities = (facility: any) => ({
       id: Number.parseInt(facility["id"]),
-      facilityName: facility["facility_name"]
+      facilityName: facility["facility_name"],
     });
 
     const formatQuarters = ({ id, year, quarter }: any) => ({
       id: parseInt(id),
       year: parseInt(year),
-      quarter: parseInt(quarter)
+      quarter: parseInt(quarter),
     });
 
     //TODO: maybe show one of them dialogs like the rest
@@ -35,21 +35,21 @@ class AppContextProvider extends React.Component {
 
     const {
       REACT_APP_DHAMIS_API_URL,
-      REACT_APP_DHAMIS_API_SECRET
+      REACT_APP_DHAMIS_API_SECRET,
     } = process.env;
 
     fetch(
       `${REACT_APP_DHAMIS_API_URL}/healthfacilities/get/${REACT_APP_DHAMIS_API_SECRET}`
     )
-      .then(res => res.json())
-      .then(data => data.map(formatFacilities))
-      .then(facilities => this.setState({ ...this.state, facilities }))
+      .then((res) => res.json())
+      .then((data) => data.map(formatFacilities))
+      .then((facilities) => this.setState({ ...this.state, facilities }))
       .catch(errorHandler);
 
     fetch(`${REACT_APP_DHAMIS_API_URL}/quarters/${REACT_APP_DHAMIS_API_SECRET}`)
-      .then(res => res.json())
-      .then(data => data.map(formatQuarters))
-      .then(quarters => this.setState({ ...this.state, quarters }))
+      .then((res) => res.json())
+      .then((data) => data.map(formatQuarters))
+      .then((quarters) => this.setState({ ...this.state, quarters }))
       .catch(errorHandler);
   }
 
@@ -59,7 +59,7 @@ class AppContextProvider extends React.Component {
       <AppContext.Provider
         value={{
           facilities,
-          quarters
+          quarters,
         }}
       >
         {this.props.children}
