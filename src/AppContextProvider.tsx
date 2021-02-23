@@ -4,7 +4,7 @@ import { facilities, quarters } from "./fixtures";
 
 class AppContextProvider extends React.Component {
   state = {
-    facilities,
+    // facilities, RM
     quarters,
   };
 
@@ -38,13 +38,13 @@ class AppContextProvider extends React.Component {
       REACT_APP_DHAMIS_API_SECRET,
     } = process.env;
 
-    fetch(
-      `${REACT_APP_DHAMIS_API_URL}/healthfacilities/get/${REACT_APP_DHAMIS_API_SECRET}`
-    )
-      .then((res) => res.json())
-      .then((data) => data.map(formatFacilities))
-      .then((facilities) => this.setState({ ...this.state, facilities }))
-      .catch(errorHandler);
+    // fetch(
+    //   `${REACT_APP_DHAMIS_API_URL}/healthfacilities/get/${REACT_APP_DHAMIS_API_SECRET}`
+    // )
+    //   .then((res) => res.json())
+    //   .then((data) => data.map(formatFacilities))
+    //   .then((facilities) => this.setState({ ...this.state, facilities }))
+    //   .catch(errorHandler); RM
 
     fetch(`${REACT_APP_DHAMIS_API_URL}/quarters/${REACT_APP_DHAMIS_API_SECRET}`)
       .then((res) => res.json())
@@ -54,11 +54,12 @@ class AppContextProvider extends React.Component {
   }
 
   render() {
-    const { facilities, quarters } = this.state;
+    // const { facilities, quarters } = this.state; RM
+    const { quarters } = this.state;
     return (
       <AppContext.Provider
         value={{
-          facilities,
+          // facilities, RM
           quarters,
         }}
       >

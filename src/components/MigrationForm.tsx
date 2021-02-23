@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useContext } from "react";
 import { createStyles, makeStyles, Theme } from "@material-ui/core/styles";
 import {
   Grid,
@@ -75,6 +75,7 @@ const defaultFormState = {
 export const MigrationForm: React.FC = () => {
   const classes = useStyles();
   const [values, setValues] = React.useState<FormState>(defaultFormState);
+  const { quarters } = useContext(AppContext);
 
   const resetForm = () => {
     setValues({
@@ -86,49 +87,45 @@ export const MigrationForm: React.FC = () => {
     });
   };
 
-  function handleSelectChange(event: React.ChangeEvent<SelectChange>) {
-    setValues((oldValues) => ({
-      ...oldValues,
-      [event.target.name as string]: event.target.value,
-    }));
+  function handleFieldChange(
+    event: React.ChangeEvent<SelectChange | HTMLInputElement>
+  ) {
+    setValues({ ...values, [event.target.name as string]: event.target.value });
   }
 
-  const handleTextChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setValues({ ...values, [event.target.name]: event.target.value });
-  };
-
   const dependenciesAvailable = (facilities: any[], quarters: any[]) => {
-    return facilities.length && quarters.length;
+    // return facilities.length && quarters.length; RM
+    return quarters.length;
   };
 
-  const filterNullFacilities = (facility: any) =>
-    facility["facility-code"] !== null;
+  // const filterNullFacilities = (facility: any) =>
+  //   facility["facility-code"] !== null;
 
-  const formatProducts = (facilities: any[]) => {
-    if (facilities instanceof Array) {
-      return facilities.map((facility: any) => {
-        if (facility.values && facility.values instanceof Array) {
-          return {
-            ...facility,
-            values: facility.values.map((value: any) => ({
-              "product-code": value["product-code"] || "null",
-              value: value["value"] || 0,
-            })),
-          };
-        }
-        return { ...facility, values: [{ "product-code": "null", value: 0 }] };
-      });
-    }
-    return [];
-  };
+  // const formatProducts = (facilities: any[]) => {
+  //   if (facilities instanceof Array) {
+  //     return facilities.map((facility: any) => {
+  //       if (facility.values && facility.values instanceof Array) {
+  //         return {
+  //           ...facility,
+  //           values: facility.values.map((value: any) => ({
+  //             "product-code": value["product-code"] || "null",
+  //             value: value["value"] || 0,
+  //           })),
+  //         };
+  //       }
+  //       return { ...facility, values: [{ "product-code": "null", value: 0 }] };
+  //     });
+  //   }
+  //   return [];
+  // }; RM
 
   //TODO: workout on the slicing element
-  const getFacilityIds = (facilities: any[]) =>
-    facilities
-      .filter((facility) => facility.id)
-      .slice(0, 900)
-      .reduce((accumulator, current) => `${accumulator},${current.id}`, "")
-      .slice(1);
+  // const getFacilityIds = (facilities: any[]) =>
+  //   facilities
+  //     .filter((facility) => facility.id)
+  //     .slice(0, 900)
+  //     .reduce((accumulator, current) => `${accumulator},${current.id}`, "")
+  //     .slice(1); RM
 
   const handleMigrationFailure = (text: string) => {
     createErrorAlert({ text });
@@ -138,14 +135,20 @@ export const MigrationForm: React.FC = () => {
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setValues({ ...values, isMigrating: true });
-    const { facilities, quarters, quarter, year } = values;
+    const { facilities, quarter, year } = values;
 
-    if (!dependenciesAvailable(facilities, quarters)) {
-      handleMigrationFailure("Failed to fetch dependencies, please try again");
-      return;
-    }
+    // if (!dependenciesAvailable(facilities, quarters)) {
+    //   handleMigrationFailure("Failed to fetch dependencies, please try again");
+    //   return;
+    // } RM
+
+    if (!quarters.length)
+      return handleMigrationFailure(
+        "Failed to fetch dependencies, please try again"
+      );
+
     //TODO: remove the slicing from the code, need to look into a real solution
-    const ids = getFacilityIds(facilities);
+    // const ids = getFacilityIds(facilities); RM
 
     const _quarter = quarters.find(
       (q) => q.quarter === quarter && q.year === year
@@ -164,7 +167,8 @@ export const MigrationForm: React.FC = () => {
       REACT_APP_DHAMIS_DATASET,
     } = process.env;
 
-    const url = `${REACT_APP_DHAMIS_API_URL}/${REACT_APP_DHAMIS_DATASET}/get/${REACT_APP_DHAMIS_API_SECRET}/${_quarter.id}/${ids}`;
+    // const url = `${REACT_APP_DHAMIS_API_URL}/${REACT_APP_DHAMIS_DATASET}/get/${REACT_APP_DHAMIS_API_SECRET}/${_quarter.id}/${ids}`; RM
+    const url = `${REACT_APP_DHAMIS_API_URL}/${REACT_APP_DHAMIS_DATASET}/get/${REACT_APP_DHAMIS_API_SECRET}/${_quarter.id}`;
 
     let dhamisData;
 
@@ -172,7 +176,7 @@ export const MigrationForm: React.FC = () => {
       dhamisData = await (await axios(url)).data;
     } catch (error) {}
 
-    dhamisData = dd;
+    // dhamisData = dd;
     if (!dhamisData) {
       handleMigrationFailure(
         "Failed to fetch data for specified period, please try again"
@@ -180,11 +184,11 @@ export const MigrationForm: React.FC = () => {
       return;
     }
 
-    const dhamisFacilites = dhamisData.facilities.filter(filterNullFacilities);
-    const validFacilities = formatProducts(dhamisFacilites);
+    // const dhamisFacilites = dhamisData.facilities.filter(filterNullFacilities); RM
+    // const validFacilities = formatProducts(dhamisFacilites); RM
     const data = {
       ...dhamisData,
-      facilities: validFacilities,
+      // facilities: validFacilities, RM
       description: values.description,
     };
     const {
@@ -216,116 +220,102 @@ export const MigrationForm: React.FC = () => {
     createSuccessAlert(adxResponse.data.notificationsChannel, { html });
     setTimeout(resetForm, 2000);
   };
+  const quarterLiterals = Array(4)
+    .fill(0)
+    .map((_, i) => i + 1);
+  const { isMigrating } = values;
 
   return (
-    <AppContext.Consumer>
-      {(context) => {
-        const { facilities, quarters } = context;
-        values.facilities = facilities;
-        values.quarters = quarters;
-
-        const quarterLiterals = Array(4)
-          .fill(0)
-          .map((_, i) => i + 1);
-        const { isMigrating } = values;
-        return (
-          <Card className={classes.container} elevation={8}>
-            <Box component="div" m={5}>
-              <form onSubmit={handleSubmit}>
-                <Box>
-                  <Grid container>
-                    <Grid item xs={6} style={{ paddingRight: "5px" }}>
-                      <FormControl className={classes.select}>
-                        <InputLabel htmlFor="year">Year</InputLabel>
-                        <Select
-                          value={values.year}
-                          onChange={handleSelectChange}
-                          required
-                          id="year"
-                          inputProps={{
-                            name: "year",
-                            id: "year",
-                          }}
-                        >
-                          {Array.from(
-                            new Set(quarters.map((quarter) => quarter.year))
-                          ).map((year) => (
-                            <MenuItem
-                              key={year}
-                              value={year}
-                              data-test={`op${year}`}
-                            >
-                              {year}
-                            </MenuItem>
-                          ))}
-                        </Select>
-                      </FormControl>
-                    </Grid>
-                    <Grid item xs={6} style={{ paddingLeft: "5px" }}>
-                      <FormControl className={classes.select}>
-                        <InputLabel htmlFor="quarter">Quarter</InputLabel>
-                        <Select
-                          value={values.quarter}
-                          onChange={handleSelectChange}
-                          required
-                          id="quarter"
-                          inputProps={{
-                            name: "quarter",
-                            id: "quarter",
-                          }}
-                        >
-                          {quarterLiterals.map((ql) => (
-                            <MenuItem key={ql} value={ql}>
-                              Quarter {ql}
-                            </MenuItem>
-                          ))}
-                        </Select>
-                      </FormControl>
-                    </Grid>
-                    <Grid item xs={12}>
-                      <TextField
-                        id="standard-multiline-static"
-                        label="Description"
-                        multiline
-                        rows="4"
-                        className={classes.textField}
-                        onChange={handleTextChange}
-                        value={values.description}
-                        name="description"
-                        inputProps={{
-                          name: "description",
-                          id: "description",
-                        }}
-                      />
-                    </Grid>
-                    <Grid item xs={12}>
-                      <Button
-                        className={classes.submittButton}
-                        variant="contained"
-                        color="primary"
-                        type="submit"
-                        id="migrate"
-                        data-test="submit"
-                        disabled={isMigrating}
-                      >
-                        {isMigrating && (
-                          <CircularProgress
-                            size={18}
-                            className={classes.migratingIndicator}
-                          />
-                        )}
-                        <span className={classes.migratingButton}>
-                          {isMigrating ? "Migrating..." : "Migrate"}
-                        </span>
-                      </Button>
-                    </Grid>
-                  </Grid>
-                </Box>
-              </form>
-            </Box>
-          </Card>
-        );
-      }}
-    </AppContext.Consumer>
+    <Card className={classes.container} elevation={8}>
+      <Box component="div" m={5}>
+        <form onSubmit={handleSubmit}>
+          <Box>
+            <Grid container>
+              <Grid item xs={6} style={{ paddingRight: "5px" }}>
+                <FormControl className={classes.select}>
+                  <InputLabel htmlFor="year">Year</InputLabel>
+                  <Select
+                    value={values.year}
+                    onChange={handleFieldChange}
+                    required
+                    id="year"
+                    inputProps={{
+                      name: "year",
+                      id: "year",
+                    }}
+                  >
+                    {Array.from(
+                      new Set(quarters.map((quarter) => quarter.year))
+                    ).map((year) => (
+                      <MenuItem key={year} value={year} data-test={`op${year}`}>
+                        {year}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item xs={6} style={{ paddingLeft: "5px" }}>
+                <FormControl className={classes.select}>
+                  <InputLabel htmlFor="quarter">Quarter</InputLabel>
+                  <Select
+                    value={values.quarter}
+                    onChange={handleFieldChange}
+                    required
+                    id="quarter"
+                    inputProps={{
+                      name: "quarter",
+                      id: "quarter",
+                    }}
+                  >
+                    {quarterLiterals.map((ql) => (
+                      <MenuItem key={ql} value={ql}>
+                        Quarter {ql}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  id="standard-multiline-static"
+                  label="Description"
+                  multiline
+                  rows="4"
+                  className={classes.textField}
+                  onChange={handleFieldChange}
+                  value={values.description}
+                  name="description"
+                  inputProps={{
+                    name: "description",
+                    id: "description",
+                  }}
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <Button
+                  className={classes.submittButton}
+                  variant="contained"
+                  color="primary"
+                  type="submit"
+                  id="migrate"
+                  data-test="submit"
+                  disabled={isMigrating}
+                >
+                  {isMigrating && (
+                    <CircularProgress
+                      size={18}
+                      className={classes.migratingIndicator}
+                    />
+                  )}
+                  <span className={classes.migratingButton}>
+                    {isMigrating ? "Migrating..." : "Migrate"}
+                  </span>
+                </Button>
+              </Grid>
+            </Grid>
+          </Box>
+        </form>
+      </Box>
+    </Card>
   );
 };
