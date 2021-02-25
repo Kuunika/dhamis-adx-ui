@@ -1,0 +1,74 @@
+{
+  "description" : "Stock indicators for October 2020 period",
+  "reportingPeriod":"oct",
+  "facilities" : [ 
+    {
+    "facility-code":"LL-4521",
+    "values" : [ 
+      {
+      "value" : 5940,
+      "product-code" : "AA040200-b"
+    }, {
+      "value" : 0,
+      "product-code" : "DN999400-f"
+    }, {
+      "value" : 0,
+      "product-code" : "TB160700-f"
+    }, {
+      "value" : 0,
+      "product-code" : "GF0078-A-b"
+    }, {
+      "value" : 0,
+      "product-code" : "GF1104-f"
+    }, {
+      "value" : 0,
+      "product-code" : "TB000700-f"
+    }]
+  },
+  {
+    "facility-code":"LL-4528",
+  "values" : [ 
+    {
+    "value" : 5940,
+    "product-code" : "AA040200-b"
+  }, {  
+    "value" : 0,
+    "product-code" : ""
+  }, {
+    "value" : 0,
+    "product-code" : "TB160700-f"
+  }, {
+    "value" : 0,
+    "product-code" : "GF0078-A-b"
+  }, {
+    "value" : 0,
+    "product-code" : "GF1104-f"
+  }, {
+    "value" : 0,
+    "product-code" : "TB000700-f"
+  }]
+},
+{
+  "values" : [ 
+    {
+    "value" : 5940,
+    "product-code" : "AA040200-b"
+  }, {
+    "value" : 0,
+    "product-code" : "DN999400-f"
+  }, {
+    "value" : 0,
+    "product-code" : "TB160700-f"
+  }, {
+    "value" : 0,
+    "product-code" : "GF0078-A-b"
+  }, {
+    "value" : 0,
+    "product-code" : "GF1104-f"
+  }, {
+    "value" : 0,
+    "product-code" : "TB000700-f"
+  }]
+}
+]
+}

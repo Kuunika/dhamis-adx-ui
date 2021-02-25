@@ -17,6 +17,7 @@ import AppContext, { Facility, Quarter } from "../AppContext";
 import axios from "axios";
 import { createErrorAlert, createSuccessAlert } from "../modules";
 import { data as dd } from "../fixtures";
+import artClinicResponse from "../sample-response.json";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -93,40 +94,6 @@ export const MigrationForm: React.FC = () => {
     setValues({ ...values, [event.target.name as string]: event.target.value });
   }
 
-  const dependenciesAvailable = (facilities: any[], quarters: any[]) => {
-    // return facilities.length && quarters.length; RM
-    return quarters.length;
-  };
-
-  // const filterNullFacilities = (facility: any) =>
-  //   facility["facility-code"] !== null;
-
-  // const formatProducts = (facilities: any[]) => {
-  //   if (facilities instanceof Array) {
-  //     return facilities.map((facility: any) => {
-  //       if (facility.values && facility.values instanceof Array) {
-  //         return {
-  //           ...facility,
-  //           values: facility.values.map((value: any) => ({
-  //             "product-code": value["product-code"] || "null",
-  //             value: value["value"] || 0,
-  //           })),
-  //         };
-  //       }
-  //       return { ...facility, values: [{ "product-code": "null", value: 0 }] };
-  //     });
-  //   }
-  //   return [];
-  // }; RM
-
-  //TODO: workout on the slicing element
-  // const getFacilityIds = (facilities: any[]) =>
-  //   facilities
-  //     .filter((facility) => facility.id)
-  //     .slice(0, 900)
-  //     .reduce((accumulator, current) => `${accumulator},${current.id}`, "")
-  //     .slice(1); RM
-
   const handleMigrationFailure = (text: string) => {
     createErrorAlert({ text });
     setValues({ ...values, isMigrating: false });
@@ -135,20 +102,12 @@ export const MigrationForm: React.FC = () => {
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setValues({ ...values, isMigrating: true });
-    const { facilities, quarter, year } = values;
-
-    // if (!dependenciesAvailable(facilities, quarters)) {
-    //   handleMigrationFailure("Failed to fetch dependencies, please try again");
-    //   return;
-    // } RM
+    const { quarter, year } = values;
 
     if (!quarters.length)
       return handleMigrationFailure(
         "Failed to fetch dependencies, please try again"
       );
-
-    //TODO: remove the slicing from the code, need to look into a real solution
-    // const ids = getFacilityIds(facilities); RM
 
     const _quarter = quarters.find(
       (q) => q.quarter === quarter && q.year === year
@@ -167,8 +126,8 @@ export const MigrationForm: React.FC = () => {
       REACT_APP_DHAMIS_DATASET,
     } = process.env;
 
-    // const url = `${REACT_APP_DHAMIS_API_URL}/${REACT_APP_DHAMIS_DATASET}/get/${REACT_APP_DHAMIS_API_SECRET}/${_quarter.id}/${ids}`; RM
-    const url = `${REACT_APP_DHAMIS_API_URL}/${REACT_APP_DHAMIS_DATASET}/get/${REACT_APP_DHAMIS_API_SECRET}/${_quarter.id}`;
+    // const url = `${REACT_APP_DHAMIS_API_URL}/${REACT_APP_DHAMIS_DATASET}/get/${REACT_APP_DHAMIS_API_SECRET}/${_quarter.id}`;
+    const url = `${REACT_APP_DHAMIS_API_URL}/${REACT_APP_DHAMIS_DATASET}/${_quarter.id}`;
 
     let dhamisData;
 
@@ -184,13 +143,28 @@ export const MigrationForm: React.FC = () => {
       return;
     }
 
-    // const dhamisFacilites = dhamisData.facilities.filter(filterNullFacilities); RM
-    // const validFacilities = formatProducts(dhamisFacilites); RM
-    const data = {
-      ...dhamisData,
-      // facilities: validFacilities, RM
+    const { facilities } = artClinicResponse;
+
+    // remove facilities without codes
+    let filteredFacilities = facilities.filter(
+      (facility) => facility["facility-code"]
+    );
+
+    // remove null values
+    filteredFacilities = filteredFacilities.map((facility) => ({
+      ...facility,
+      values: facility.values.filter(
+        (value) => value["product-code"] || value["value"]
+      ),
+    }));
+
+    // prepared payload
+    const formattedResponse = {
+      ...artClinicResponse,
       description: values.description,
+      facilities: filteredFacilities,
     };
+
     const {
       REACT_APP_INTEROP_API_URL_ENDPOINT,
       REACT_APP_INTEROP_USERNAME,
@@ -202,7 +176,7 @@ export const MigrationForm: React.FC = () => {
     let adxResponse: any = await axios({
       url: `${REACT_APP_INTEROP_API_URL_ENDPOINT}/dhis2/data-elements`,
       method: "post",
-      data,
+      data: formattedResponse,
       auth: {
         username: `${REACT_APP_INTEROP_USERNAME}`,
         password: `${REACT_APP_INTEROP_PASSWORD}`,
