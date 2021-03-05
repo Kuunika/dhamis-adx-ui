@@ -17,7 +17,21 @@ import AppContext, { Facility, Quarter } from "../AppContext";
 import axios from "axios";
 import { createErrorAlert, createSuccessAlert } from "../modules";
 import { data as dd } from "../fixtures";
-import artClinicResponse from "../sample-response.json";
+
+interface IValue {
+  "product-code": string;
+  value: number;
+  "concept-name": string;
+}
+interface IFacility {
+  "facility-code": string;
+  values: Array<IValue>;
+}
+interface IDhamisResponse {
+  description: string;
+  "reporting-period": string;
+  facilities: Array<IFacility>;
+}
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -132,7 +146,7 @@ export const MigrationForm: React.FC = () => {
     let dhamisData;
 
     try {
-      dhamisData = await (await axios(url)).data;
+      dhamisData = (await (await axios(url)).data) as IDhamisResponse;
     } catch (error) {}
 
     // dhamisData = dd;
@@ -143,7 +157,7 @@ export const MigrationForm: React.FC = () => {
       return;
     }
 
-    const { facilities } = artClinicResponse;
+    const { facilities } = dhamisData;
 
     // remove facilities without codes
     let filteredFacilities = facilities.filter(
@@ -160,7 +174,7 @@ export const MigrationForm: React.FC = () => {
 
     // prepared payload
     const formattedResponse = {
-      ...artClinicResponse,
+      ...dhamisData,
       description: values.description,
       facilities: filteredFacilities,
     };
@@ -172,6 +186,8 @@ export const MigrationForm: React.FC = () => {
     } = process.env;
 
     // console.log(REACT_APP_INTEROP_USERNAME, REACT_APP_INTEROP_PASSWORD);
+
+    console.log("formatted-response", formattedResponse);
 
     let adxResponse: any = await axios({
       url: `${REACT_APP_INTEROP_API_URL_ENDPOINT}/dhis2/data-elements`,

@@ -4,7 +4,6 @@ import { facilities, quarters } from "./fixtures";
 
 class AppContextProvider extends React.Component {
   state = {
-    // facilities, RM
     quarters,
   };
 
@@ -38,7 +37,7 @@ class AppContextProvider extends React.Component {
       REACT_APP_DHAMIS_API_SECRET,
     } = process.env;
 
-    fetch(`${REACT_APP_DHAMIS_API_URL}/quarters/${REACT_APP_DHAMIS_API_SECRET}`)
+    fetch(`${REACT_APP_DHAMIS_API_URL}/quarter`)
       .then((res) => res.json())
       .then((data) => data.map(formatQuarters))
       .then((quarters) => this.setState({ ...this.state, quarters }))
