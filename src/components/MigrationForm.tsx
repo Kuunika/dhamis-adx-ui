@@ -18,6 +18,10 @@ import axios from "axios";
 import { createErrorAlert, createSuccessAlert } from "../modules";
 import { data as dd } from "../fixtures";
 import { IDhamisResponse } from "../interfaces";
+import * as yup from "yup";
+import { Form } from "./form";
+import SelectFieldInput from "./form/select-input";
+import TextFieldInput from "./form/text-area-input";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -212,70 +216,56 @@ export const MigrationForm: React.FC = () => {
     .map((_, i) => i + 1);
   const { isMigrating } = values;
 
+  const validationSchema = yup.object({
+    year: yup.string().required("year is required"),
+    description: yup.string().required("description is required"),
+    quarter: yup.string().required("quarter is required"),
+  });
+
+  const years = Array.from(
+    new Set(quarters.map((quarter) => quarter.year))
+  ).map((year) => ({
+    value: year,
+    label: year.toString(),
+  }));
+
+  const quarterLiteralsList = quarterLiterals.map((quarter) => ({
+    value: quarter,
+    label: `Quarter ${quarter}`,
+  }));
+
   return (
     <Card className={classes.container} elevation={8}>
       <Box component="div" m={5}>
-        <form onSubmit={handleSubmit}>
+        <Form
+          validationSchema={validationSchema}
+          initialValues={{ year: "", quarter: "", description: "" }}
+          onSubmit={(values) => console.log(values)}
+        >
           <Box>
             <Grid container>
               <Grid item xs={6} style={{ paddingRight: "5px" }}>
-                <FormControl className={classes.select}>
-                  <InputLabel htmlFor="year">Year</InputLabel>
-                  <Select
-                    value={values.year}
-                    onChange={handleFieldChange}
-                    required
-                    id="year"
-                    inputProps={{
-                      name: "year",
-                      id: "year",
-                    }}
-                  >
-                    {Array.from(
-                      new Set(quarters.map((quarter) => quarter.year))
-                    ).map((year) => (
-                      <MenuItem key={year} value={year} data-test={`op${year}`}>
-                        {year}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
+                <SelectFieldInput
+                  label="Year"
+                  name="year"
+                  menuItems={years}
+                  className={classes.select}
+                />
               </Grid>
-              <Grid item xs={6} style={{ paddingLeft: "5px" }}>
-                <FormControl className={classes.select}>
-                  <InputLabel htmlFor="quarter">Quarter</InputLabel>
-                  <Select
-                    value={values.quarter}
-                    onChange={handleFieldChange}
-                    required
-                    id="quarter"
-                    inputProps={{
-                      name: "quarter",
-                      id: "quarter",
-                    }}
-                  >
-                    {quarterLiterals.map((ql) => (
-                      <MenuItem key={ql} value={ql}>
-                        Quarter {ql}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
+              <Grid item xs={6} style={{ paddingRight: "5px" }}>
+                <SelectFieldInput
+                  label="Quarter"
+                  name="quarter"
+                  className={classes.select}
+                  menuItems={quarterLiteralsList}
+                />
               </Grid>
               <Grid item xs={12}>
-                <TextField
-                  id="standard-multiline-static"
-                  label="Description"
-                  multiline
-                  rows="4"
-                  className={classes.textField}
-                  onChange={handleFieldChange}
-                  value={values.description}
+                <TextFieldInput
                   name="description"
-                  inputProps={{
-                    name: "description",
-                    id: "description",
-                  }}
+                  label="Description"
+                  id="description"
+                  className={classes.textField}
                 />
               </Grid>
               <Grid item xs={12}>
@@ -301,7 +291,7 @@ export const MigrationForm: React.FC = () => {
               </Grid>
             </Grid>
           </Box>
-        </form>
+        </Form>
       </Box>
     </Card>
   );

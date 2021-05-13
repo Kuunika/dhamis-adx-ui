@@ -12,6 +12,7 @@ interface ISelectFieldInput {
   menuItems: Array<{ value: string | number; label: string }>;
   variant?: any;
   name: string;
+  className?: any;
   customHandleChange?: (value: any) => void;
 }
 
@@ -35,6 +36,7 @@ const SelectFieldInput: FC<ISelectFieldInput> = ({
   label,
   variant,
   name,
+  className,
   customHandleChange = ({}) => {},
 }): ReactElement => {
   const classes = useStyles();
@@ -45,10 +47,7 @@ const SelectFieldInput: FC<ISelectFieldInput> = ({
   const error = fieldTouched[name] && Boolean(fieldErrors[name]);
 
   return (
-    <FormControl
-      variant={variant ? variant : "outlined"}
-      className={classes.formControl}
-    >
+    <FormControl variant={variant ? variant : "outlined"} className={className}>
       <InputLabel htmlFor={label}>{label}</InputLabel>
       <Select
         id={label}

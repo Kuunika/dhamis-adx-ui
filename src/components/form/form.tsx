@@ -1,4 +1,4 @@
-import { FC } from "react";
+import React, { FC } from "react";
 import { Formik } from "formik";
 
 interface IProps {
@@ -13,17 +13,17 @@ const Form: FC<IProps> = ({
   validationSchema,
   onSubmit,
 }) => {
-  <Formik
-    initialValues={initialValues}
-    validationSchema={validationSchema}
-    onSubmit={onSubmit}
-  >
-    {({ handleSubmit, isSubmitting }) => {
-      {
-        children;
-      }
-    }}
-  </Formik>;
+  return (
+    <Formik
+      initialValues={initialValues}
+      validationSchema={validationSchema}
+      onSubmit={onSubmit}
+    >
+      {({ handleSubmit, isSubmitting }) => {
+        return <form onSubmit={handleSubmit}>{children}</form>;
+      }}
+    </Formik>
+  );
 };
 
 export default Form;
