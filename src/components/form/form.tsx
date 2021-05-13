@@ -17,5 +17,13 @@ const Form: FC<IProps> = ({
     initialValues={initialValues}
     validationSchema={validationSchema}
     onSubmit={onSubmit}
-  ></Formik>;
+  >
+    {({ handleSubmit, isSubmitting }) => {
+      {
+        children;
+      }
+    }}
+  </Formik>;
 };
+
+export default Form;
