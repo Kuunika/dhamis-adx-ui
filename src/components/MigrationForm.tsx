@@ -3,7 +3,7 @@ import { createStyles, makeStyles, Theme } from "@material-ui/core/styles";
 import { Grid, Box, Button, Card, CircularProgress } from "@material-ui/core";
 import * as yup from "yup";
 
-import AppContext from "../context/AppContext";
+import { AppContext } from "../context/AppContext";
 import get from "../api/get";
 import post from "../api/post";
 

@@ -1,5 +1,5 @@
 import axios from "axios";
-import { IDhamisResponse } from "../interfaces";
+import { IDhamisResponse, Quarter } from "../interfaces";
 
 const { REACT_APP_DHAMIS_API_URL } = process.env;
 
@@ -14,6 +14,15 @@ const getDhamisData = async function (
   } catch (error) {}
 };
 
+const getDhamisQuarters = async function () {
+  try {
+    return (await (
+      await axios(`${REACT_APP_DHAMIS_API_URL}/quarter`)
+    ).data) as Quarter[];
+  } catch (error) {}
+};
+
 export default {
   getDhamisData,
+  getDhamisQuarters,
 };

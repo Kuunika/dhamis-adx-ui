@@ -1,5 +1,6 @@
-import React from "react";
+import React, { FC, useState, useEffect } from "react";
 import { Quarter, Facility } from "../interfaces";
+import get from "../api/get";
 
 export type AppContextType = {
   quarters: Quarter[];
@@ -7,6 +8,20 @@ export type AppContextType = {
 
 const defaultContext = { facilities: [], quarters: [] };
 
-const appContext = React.createContext<AppContextType>(defaultContext);
+const AppContext = React.createContext<AppContextType>(defaultContext);
+const AppContextProvider: FC = ({ children }) => {
+  const [quarters, setQuarters] = useState<Quarter[]>([]);
 
-export default appContext;
+  useEffect(() => {
+    (async () => {
+      const quarters = await get.getDhamisQuarters();
+      setQuarters(quarters ? quarters : []);
+    })();
+  }, []);
+
+  return (
+    <AppContext.Provider value={{ quarters }}>{children}</AppContext.Provider>
+  );
+};
+
+export { AppContext, AppContextProvider };
