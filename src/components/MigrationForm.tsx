@@ -13,25 +13,11 @@ import {
   CircularProgress,
 } from "@material-ui/core";
 
-import AppContext, { Facility, Quarter } from "../AppContext";
+import AppContext, { Facility, Quarter } from "../context/AppContext";
 import axios from "axios";
 import { createErrorAlert, createSuccessAlert } from "../modules";
 import { data as dd } from "../fixtures";
-
-interface IValue {
-  "product-code": string;
-  value: number;
-  "concept-name"?: string;
-}
-interface IFacility {
-  "facility-code": string;
-  values: Array<IValue>;
-}
-interface IDhamisResponse {
-  description: string;
-  "reporting-period": string;
-  facilities: Array<IFacility>;
-}
+import { IDhamisResponse } from "../interfaces";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({

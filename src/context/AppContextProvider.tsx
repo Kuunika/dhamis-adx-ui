@@ -1,6 +1,6 @@
 import React from "react";
 import AppContext from "./AppContext";
-import { facilities, quarters } from "./fixtures";
+import { facilities, quarters } from "../fixtures";
 
 class AppContextProvider extends React.Component {
   state = {
@@ -32,10 +32,8 @@ class AppContextProvider extends React.Component {
       console.log(`Error: ${error.message}`);
     };
 
-    const {
-      REACT_APP_DHAMIS_API_URL,
-      REACT_APP_DHAMIS_API_SECRET,
-    } = process.env;
+    const { REACT_APP_DHAMIS_API_URL, REACT_APP_DHAMIS_API_SECRET } =
+      process.env;
 
     fetch(`${REACT_APP_DHAMIS_API_URL}/quarter`)
       .then((res) => res.json())
