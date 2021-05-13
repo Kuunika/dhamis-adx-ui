@@ -24,20 +24,6 @@ const TextFieldInput: FC<ITextField> = ({
   const fieldErrors: any = errors;
 
   return (
-    // <TextField
-    //       id="standard-multiline-static"
-    //       label="Description"
-    //       multiline
-    //       rows="4"
-    //       className={classes.textField}
-    //       onChange={handleFieldChange}
-    //       value={values.description}
-    //       name="description"
-    //       inputProps={{
-    //         name: "description",
-    //         id: "description",
-    //       }}
-    //     />
     <TextField
       style={{ marginBottom: "20px" }}
       name={name}

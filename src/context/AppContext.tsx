@@ -1,18 +1,7 @@
 import React from "react";
-
-export type Facility = {
-  id: number;
-  facilityName: string;
-};
-
-export type Quarter = {
-  id: number;
-  year: number;
-  quarter: number;
-};
+import { Quarter, Facility } from "../interfaces";
 
 export type AppContextType = {
-  // facilities: Facility[], RM
   quarters: Quarter[];
 };
 

@@ -1,27 +1,15 @@
 import React, { useContext } from "react";
 import { createStyles, makeStyles, Theme } from "@material-ui/core/styles";
-import {
-  Grid,
-  Box,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  TextField,
-  Button,
-  Card,
-  CircularProgress,
-} from "@material-ui/core";
-
-import AppContext, { Facility, Quarter } from "../context/AppContext";
-import axios from "axios";
-import { createErrorAlert, createSuccessAlert } from "../modules";
-import { data as dd } from "../fixtures";
-import { IDhamisResponse } from "../interfaces";
+import { Grid, Box, Button, Card, CircularProgress } from "@material-ui/core";
 import * as yup from "yup";
-import { Form } from "./form";
-import SelectFieldInput from "./form/select-input";
-import TextFieldInput from "./form/text-area-input";
+
+import AppContext from "../context/AppContext";
+import get from "../api/get";
+import post from "../api/post";
+
+import { Quarter, Facility } from "../interfaces";
+import { createErrorAlert, createSuccessAlert } from "../modules";
+import { Form, TextAreaInput, SelectFieldInput } from "./form";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -39,7 +27,7 @@ const useStyles = makeStyles((theme: Theme) =>
       width: "100%",
       marginTop: theme.spacing(2),
     },
-    submittButton: {
+    submitButton: {
       width: "100%",
       marginTop: theme.spacing(4),
     },
@@ -61,11 +49,6 @@ type FormState = {
   facilities: Facility[];
   quarters: Quarter[];
   isMigrating: boolean;
-};
-
-type SelectChange = {
-  name?: string;
-  value: unknown;
 };
 
 const defaultFormState = {
@@ -92,21 +75,14 @@ export const MigrationForm: React.FC = () => {
     });
   };
 
-  function handleFieldChange(
-    event: React.ChangeEvent<SelectChange | HTMLInputElement>
-  ) {
-    setValues({ ...values, [event.target.name as string]: event.target.value });
-  }
-
   const handleMigrationFailure = (text: string) => {
     createErrorAlert({ text });
     setValues({ ...values, isMigrating: false });
   };
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  const handleSubmit = async (formValues: any) => {
     setValues({ ...values, isMigrating: true });
-    const { quarter, year } = values;
+    const { quarter, year, description } = formValues;
 
     if (!quarters.length)
       return handleMigrationFailure(
@@ -124,24 +100,16 @@ export const MigrationForm: React.FC = () => {
       return;
     }
 
-    const {
-      REACT_APP_DHAMIS_API_URL,
-      REACT_APP_DHAMIS_API_SECRET,
-      REACT_APP_DHAMIS_DATASET,
-    } = process.env;
+    const { REACT_APP_DHAMIS_API_SECRET, REACT_APP_DHAMIS_DATASET } =
+      process.env;
 
     // const url = `${REACT_APP_DHAMIS_API_URL}/${REACT_APP_DHAMIS_DATASET}/get/${REACT_APP_DHAMIS_API_SECRET}/${_quarter.id}`;
-    const url = `${REACT_APP_DHAMIS_API_URL}/${REACT_APP_DHAMIS_DATASET}/${_quarter.id}`;
 
-    // const url = "http://localhost:4000/artclinic/72";
+    let dhamisData = await get.getDhamisData(
+      _quarter.id,
+      REACT_APP_DHAMIS_DATASET
+    );
 
-    let dhamisData;
-
-    try {
-      dhamisData = (await (await axios(url)).data) as IDhamisResponse;
-    } catch (error) {}
-
-    // dhamisData = dd;
     if (!dhamisData) {
       handleMigrationFailure(
         "Failed to fetch data for specified period, please try again"
@@ -180,40 +148,27 @@ export const MigrationForm: React.FC = () => {
       facilities: filteredFacilities,
     };
 
-    const {
-      REACT_APP_INTEROP_API_URL_ENDPOINT,
-      REACT_APP_INTEROP_USERNAME,
-      REACT_APP_INTEROP_PASSWORD,
-    } = process.env;
-
-    // console.log(REACT_APP_INTEROP_USERNAME, REACT_APP_INTEROP_PASSWORD);
-
     console.log("formatted-response", JSON.stringify(formattedResponse));
 
-    let adxResponse: any = await axios({
-      url: `${REACT_APP_INTEROP_API_URL_ENDPOINT}/dhis2/data-elements`,
-      method: "post",
-      data: formattedResponse,
-      auth: {
-        username: `${REACT_APP_INTEROP_USERNAME}`,
-        password: `${REACT_APP_INTEROP_PASSWORD}`,
-      },
-    }).catch((error) => console.log(error));
+    let adxResponse: any = await post.postToIL(formattedResponse);
 
     if (!adxResponse || adxResponse.status !== 202) {
       const text = "Failed to send data to the interoperability layer";
       createErrorAlert({ text });
       return;
     }
+
     const html = `
         <p>You will recieve an Email once the migration is processed</p>
       `;
     createSuccessAlert(adxResponse.data.notificationsChannel, { html });
     setTimeout(resetForm, 2000);
   };
+
   const quarterLiterals = Array(4)
     .fill(0)
     .map((_, i) => i + 1);
+
   const { isMigrating } = values;
 
   const validationSchema = yup.object({
@@ -240,7 +195,7 @@ export const MigrationForm: React.FC = () => {
         <Form
           validationSchema={validationSchema}
           initialValues={{ year: "", quarter: "", description: "" }}
-          onSubmit={(values) => console.log(values)}
+          onSubmit={handleSubmit}
         >
           <Box>
             <Grid container>
@@ -261,7 +216,7 @@ export const MigrationForm: React.FC = () => {
                 />
               </Grid>
               <Grid item xs={12}>
-                <TextFieldInput
+                <TextAreaInput
                   name="description"
                   label="Description"
                   id="description"
@@ -270,7 +225,7 @@ export const MigrationForm: React.FC = () => {
               </Grid>
               <Grid item xs={12}>
                 <Button
-                  className={classes.submittButton}
+                  className={classes.submitButton}
                   variant="contained"
                   color="primary"
                   type="submit"

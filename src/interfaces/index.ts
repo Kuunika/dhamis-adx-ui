@@ -12,3 +12,14 @@ export interface IDhamisResponse {
   "reporting-period": string;
   facilities: Array<IFacility>;
 }
+
+export type Facility = {
+  id: number;
+  facilityName: string;
+};
+
+export type Quarter = {
+  id: number;
+  year: number;
+  quarter: number;
+};
