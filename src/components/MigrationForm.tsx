@@ -21,7 +21,7 @@ import { data as dd } from "../fixtures";
 interface IValue {
   "product-code": string;
   value: number;
-  "concept-name": string;
+  "concept-name"?: string;
 }
 interface IFacility {
   "facility-code": string;
@@ -143,6 +143,8 @@ export const MigrationForm: React.FC = () => {
     // const url = `${REACT_APP_DHAMIS_API_URL}/${REACT_APP_DHAMIS_DATASET}/get/${REACT_APP_DHAMIS_API_SECRET}/${_quarter.id}`;
     const url = `${REACT_APP_DHAMIS_API_URL}/${REACT_APP_DHAMIS_DATASET}/${_quarter.id}`;
 
+    // const url = "http://localhost:4000/artclinic/72";
+
     let dhamisData;
 
     try {
@@ -165,12 +167,21 @@ export const MigrationForm: React.FC = () => {
     );
 
     // remove null values
-    filteredFacilities = filteredFacilities.map((facility) => ({
-      ...facility,
-      values: facility.values.filter(
-        (value) => value["product-code"] || value["value"]
-      ),
-    }));
+    filteredFacilities = filteredFacilities
+      .map((facility) => ({
+        ...facility,
+        "facility-code": facility["facility-code"].toString(),
+        values: facility.values.filter(
+          (value) => value["product-code"] && value["value"]
+        ),
+      }))
+      .map((facility) => ({
+        ...facility,
+        values: facility.values.map((product) => ({
+          "product-code": product["product-code"],
+          value: product["value"],
+        })),
+      }));
 
     // prepared payload
     const formattedResponse = {
@@ -187,7 +198,7 @@ export const MigrationForm: React.FC = () => {
 
     // console.log(REACT_APP_INTEROP_USERNAME, REACT_APP_INTEROP_PASSWORD);
 
-    console.log("formatted-response", formattedResponse);
+    console.log("formatted-response", JSON.stringify(formattedResponse));
 
     let adxResponse: any = await axios({
       url: `${REACT_APP_INTEROP_API_URL_ENDPOINT}/dhis2/data-elements`,
@@ -197,7 +208,7 @@ export const MigrationForm: React.FC = () => {
         username: `${REACT_APP_INTEROP_USERNAME}`,
         password: `${REACT_APP_INTEROP_PASSWORD}`,
       },
-    }).catch((error) => console.log(error.message));
+    }).catch((error) => console.log(error));
 
     if (!adxResponse || adxResponse.status !== 202) {
       const text = "Failed to send data to the interoperability layer";
