@@ -8,7 +8,7 @@ const {
 
 const postToIL = async (formattedResponse: any) => {
   try {
-    await axios({
+    return await axios({
       url: `${REACT_APP_INTEROP_API_URL_ENDPOINT}/dhis2/data-elements`,
       method: "POST",
       data: formattedResponse,
@@ -16,8 +16,10 @@ const postToIL = async (formattedResponse: any) => {
         username: `${REACT_APP_INTEROP_USERNAME}`,
         password: `${REACT_APP_INTEROP_PASSWORD}`,
       },
-    }).catch((error) => console.log(error));
-  } catch (error) {}
+    });
+  } catch (error) {
+    console.log("POST TO IL ERROR======>", error);
+  }
 };
 
 export default {

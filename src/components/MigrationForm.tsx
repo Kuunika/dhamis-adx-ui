@@ -7,7 +7,7 @@ import { AppContext } from "../context/AppContext";
 import get from "../api/get";
 import post from "../api/post";
 
-import { Quarter, Facility } from "../interfaces";
+import { Quarter, Facility, IDhamisResponse } from "../interfaces";
 import { createErrorAlert, createSuccessAlert } from "../modules";
 import { Form, TextAreaInput, SelectFieldInput } from "./form";
 
@@ -103,12 +103,25 @@ export const MigrationForm: React.FC = () => {
     const { REACT_APP_DHAMIS_API_SECRET, REACT_APP_DHAMIS_DATASET } =
       process.env;
 
-    // const url = `${REACT_APP_DHAMIS_API_URL}/${REACT_APP_DHAMIS_DATASET}/get/${REACT_APP_DHAMIS_API_SECRET}/${_quarter.id}`;
+    let datasets: string[] = [];
+    let dhamisData = {} as IDhamisResponse;
 
-    let dhamisData = await get.getDhamisData(
-      _quarter.id,
-      REACT_APP_DHAMIS_DATASET
-    );
+    datasets =
+      (REACT_APP_DHAMIS_DATASET && REACT_APP_DHAMIS_DATASET.split(",")) || [];
+
+    for (let dataset of datasets) {
+      const response = await get.getDhamisData(_quarter.id, dataset);
+
+      dhamisData =
+        !Object.keys(dhamisData).length && response
+          ? response
+          : response
+          ? {
+              ...dhamisData,
+              facilities: [...dhamisData.facilities, ...response.facilities],
+            }
+          : ({} as IDhamisResponse);
+    }
 
     if (!dhamisData) {
       handleMigrationFailure(
@@ -120,6 +133,7 @@ export const MigrationForm: React.FC = () => {
     const { facilities } = dhamisData;
 
     // remove facilities without codes
+
     let filteredFacilities = facilities.filter(
       (facility) => facility["facility-code"]
     );
@@ -144,7 +158,7 @@ export const MigrationForm: React.FC = () => {
     // prepared payload
     const formattedResponse = {
       ...dhamisData,
-      description: values.description,
+      description: description,
       facilities: filteredFacilities,
     };
 
