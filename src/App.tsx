@@ -2,7 +2,7 @@ import React from "react";
 import { createStyles, makeStyles, Theme } from "@material-ui/core/styles";
 import styled from "styled-components";
 import "./App.css";
-import { Header, MigrationForm, Footer } from "./components/";
+import { Header, MigrationForm, Footer } from "./components";
 import { AppContextProvider } from "./context/AppContext";
 
 const useStyles = makeStyles((theme: Theme) =>

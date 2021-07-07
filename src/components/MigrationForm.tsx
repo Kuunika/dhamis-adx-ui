@@ -158,6 +158,7 @@ export const MigrationForm: React.FC = () => {
     // prepared payload
     const formattedResponse = {
       ...dhamisData,
+      "reporting-period": `${year}Q${quarter}`,
       description: description,
       facilities: filteredFacilities,
     };

@@ -11,6 +11,9 @@ const postToIL = async (formattedResponse: any) => {
     return await axios({
       url: `${REACT_APP_INTEROP_API_URL_ENDPOINT}/dhis2/data-elements`,
       method: "POST",
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+      },
       data: formattedResponse,
       auth: {
         username: `${REACT_APP_INTEROP_USERNAME}`,

@@ -17,7 +17,7 @@ const getDhamisData = async function (
 const getDhamisQuarters = async function () {
   try {
     return (await (
-      await axios(`${REACT_APP_DHAMIS_API_URL}/quarter`)
+      await axios(`${REACT_APP_DHAMIS_API_URL}/quarters`)
     ).data) as Quarter[];
   } catch (error) {}
 };
